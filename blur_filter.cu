@@ -70,7 +70,7 @@ int main(int argc, char **argv)
    print_image(out_gold);
 #endif
 
-   /* FIXME: Calculate the blur on the GPU. The result is stored in out_gpu. */
+   /* Calculate the blur on the GPU. The result is stored in out_gpu. */
    fprintf(stderr, "Calculating blur on the GPU\n");
    compute_on_device(in, out_gpu);
    fprintf(stderr, "Execution time = %fs\n", (float) (stop.tv_sec - start.tv_sec\
@@ -115,7 +115,7 @@ void compute_on_device(const image_t in, image_t out)
         /* Invoke kernel */
 	dim3 dimBlock(32, 32);
 	dim3 dimGrid(in.size / dimBlock.x, in.size / dimBlock.x);
-	blur_filter_kernel<<<dimBlock, dimGrid>>>(d_in, d_out, in.size);
+	blur_filter_kernel<<<dimGrid, dimBlock>>>(d_in, d_out, in.size);
 	cudaDeviceSynchronize();
 
         gettimeofday(&stop, NULL); 

@@ -14,8 +14,8 @@ blur_filter_kernel (const float *in, float *out, int size)
     float blur_value;
     int num_neighbors;
 
-	row = blockIdx.x * blockDim.x + threadIdx.x;             /* Obtain row number of pixel */
-	col = blockIdx.y * blockDim.y + threadIdx.y;           /* Obtain column number of pixel */
+	row = blockIdx.y * blockDim.y + threadIdx.y;             /* Obtain row number of pixel */
+	col = blockIdx.x * blockDim.x + threadIdx.x;           /* Obtain column number of pixel */
 	pix = row * size + col;
 
 	/* Apply blur filter to current pixel */
