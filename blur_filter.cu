@@ -27,6 +27,8 @@ void compute_on_device(const image_t, image_t);
 int check_results(const float *, const float *, int, float);
 void print_image(const image_t);
 
+struct timeval start, stop;
+
 int main(int argc, char **argv)
 {
     if (argc < 2) {
@@ -56,8 +58,12 @@ int main(int argc, char **argv)
         in.element[i] = rand()/(float)RAND_MAX -  0.5;
   
    /* Calculate the blur on the CPU. The result is stored in out_gold. */
-    fprintf(stderr, "Calculating blur on the CPU\n"); 
-    compute_gold(in, out_gold); 
+    fprintf(stderr, "Calculating blur on the CPU\n");
+    gettimeofday(&start, NULL); 
+    compute_gold(in, out_gold);
+    gettimeofday(&stop, NULL);
+    fprintf(stderr, "Execution time = %fs\n", (float) (stop.tv_sec - start.tv_sec\
+                    + (stop.tv_usec - start.tv_usec)/(float)1000000)); 
 
 #ifdef DEBUG 
    print_image(in);
@@ -67,6 +73,9 @@ int main(int argc, char **argv)
    /* FIXME: Calculate the blur on the GPU. The result is stored in out_gpu. */
    fprintf(stderr, "Calculating blur on the GPU\n");
    compute_on_device(in, out_gpu);
+   fprintf(stderr, "Execution time = %fs\n", (float) (stop.tv_sec - start.tv_sec\
+                    + (stop.tv_usec - start.tv_usec)/(float)1000000)); 
+
 
    /* Check CPU and GPU results for correctness */
    fprintf(stderr, "Checking CPU and GPU results\n");
@@ -101,12 +110,15 @@ void compute_on_device(const image_t in, image_t out)
 	/* Copy in from host memory to device memory */
 	cudaMemcpy(d_in, in.element, size, cudaMemcpyHostToDevice);
 
-	/* Invoke kernel */
+        gettimeofday(&start, NULL); 
+ 
+        /* Invoke kernel */
 	dim3 dimBlock(32, 32);
 	dim3 dimGrid(in.size / dimBlock.x, in.size / dimBlock.x);
 	blur_filter_kernel<<<dimBlock, dimGrid>>>(d_in, d_out, in.size);
-
 	cudaDeviceSynchronize();
+
+        gettimeofday(&stop, NULL); 
 
 	/* Read out from device memory */
 	cudaMemcpy(out.element, d_out, size, cudaMemcpyDeviceToHost);
